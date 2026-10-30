@@ -1,0 +1,10 @@
+# ضع القيم الحقيقية في إعدادات Render (Environment) وليس في الكود
+NOWPAYMENTS_API_KEY=
+NOWPAYMENTS_IPN_SECRET=
+AUTH_SECRET=اكتب-نص-عشوائي-طويل
+BASE_URL=https://your-app.onrender.com
+REPLICATE_API_TOKEN=
+ELEVEN_API_KEY=
+DATA_DIR=./data
+ANTHROPIC_API_KEY=
+CLAUDE_MODEL=claude-sonnet-4-6
