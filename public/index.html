@@ -11,8 +11,10 @@
 main{max-width:560px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
 h1{font-size:22px;margin:8px 0}h2{font-size:17px;margin:0 0 10px}input,select,textarea,button{width:100%;font:inherit;padding:11px;margin:5px 0;border-radius:10px;border:1px solid var(--bd);background:transparent;color:var(--tx)}
 button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}button.alt{background:transparent;color:var(--tx);border:1px solid var(--bd)}
-.mut{color:var(--mut);font-size:14px}.plan{display:flex;justify-content:space-between;align-items:center;gap:10px}.plan button{width:auto;padding:9px 16px}
-#msg{color:#ff6b6b;min-height:20px}.hide{display:none}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:600;padding:14px 6px}pre{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.1);padding:12px;border-radius:10px}
+.mut{color:var(--mut);font-size:14px}
+#msg{color:#ff6b6b;min-height:20px}.hide{display:none}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:600;padding:14px 6px}#ok{background:rgba(60,200,120,.15);border-radius:10px;padding:10px;margin-bottom:12px;font-size:14px}.ben{padding:0 18px;margin:8px 0 14px;line-height:1.9;font-size:15px}
+.pc{border:2px solid var(--bd);border-radius:14px;padding:14px;margin:10px 0;position:relative}.pc.best{border-color:var(--ac)}.bd{position:absolute;top:-11px;right:12px;background:var(--ac);color:#111;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px}
+.pr{font-size:26px;font-weight:800}.pr small{font-size:13px;font-weight:400;color:var(--mut)}.sv{color:#3cc878;font-size:13px}pre{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.1);padding:12px;border-radius:10px}
 </style>
 </head>
 <body><main>
@@ -30,7 +32,9 @@ button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}b
 <input id="s_goal" placeholder="هدفك الرئيسي (مبيعات، عملاء جدد...)">
 <button onclick="survey()">تفعيل الحساب</button></section>
 
-<section id="vPlans" class="card hide"><h2>اختر خطتك</h2><div id="plans"></div><p class="mut">الدفع بالعملات الرقمية عبر NOWPayments.</p></section>
+<section id="vPlans" class="card hide"><div id="ok"></div><h2>🚀 ابدأ الآن وانشر إعلانك اليوم</h2>
+<ul class="ben"><li>🎥 إعلان فيديو بصوت بشري خلال دقائق</li><li>✍️ 14 أداة نصوص بلهجتك: إعلانات، عناوين، سيناريوهات</li><li>📅 خطة محتوى وردود واتساب وتحليل منافسين</li><li>⚡ يتفعّل حسابك تلقائياً بعد تأكيد الدفع</li></ul>
+<div id="plans"></div><p class="mut">🔒 دفع آمن بالعملات الرقمية عبر NOWPayments · بدون تجديد تلقائي: تدفع مرة وتبدأ فوراً.</p></section>
 
 <section id="vTools" class="card hide"><h2>أدواتك</h2><p class="mut" id="quota"></p><div id="grid" class="grid"></div></section>
 <section id="vRun" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2 id="tn"></h2>
@@ -44,7 +48,7 @@ button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}b
 </main>
 <script>
 window.onerror=function(m){var e=document.getElementById('msg');if(e)e.textContent='خطأ: '+m};
-const $=id=>document.getElementById(id);let T='';try{T=localStorage.getItem('t')||''}catch(e){}
+const $=id=>document.getElementById(id);let T='',BZ='';try{T=localStorage.getItem('t')||''}catch(e){}
 const show=(...ids)=>['vAuth','vSurvey','vPlans','vTools','vRun','vStudio'].forEach(i=>$(i).classList.toggle('hide',!ids.includes(i)));
 const err=m=>$('msg').textContent=m||'';
 async function api(p,o={}){const r=await fetch(p,{...o,headers:{'Content-Type':'application/json',Authorization:'Bearer '+T,...(o.headers||{})}});
@@ -53,13 +57,18 @@ async function auth(k){try{err();const d=await api('/api/'+k,{method:'POST',body
  T=d.token;try{localStorage.setItem('t',T)}catch(e){}init()}catch(e){err(e.message)}}
 function logout(){T='';try{localStorage.removeItem('t')}catch(e){}init()}
 async function survey(){try{err();const a={};['business','platform','budget','goal'].forEach(k=>a[k]=$('s_'+k).value);
- await api('/api/survey',{method:'POST',body:JSON.stringify({answers:a})});init()}catch(e){err(e.message)}}
+ await api('/api/survey',{method:'POST',body:JSON.stringify({answers:a})});BZ=a.business;init()}catch(e){err(e.message)}}
 async function init(){
  if(!T){show('vAuth');$('out').classList.add('hide');$('who').textContent='';return}
  try{const m=await api('/api/me');$('out').classList.remove('hide');$('who').textContent=m.email;
   if(!m.surveyDone)return show('vSurvey');
-  if(!m.active){const p=await api('/api/plans');$('plans').innerHTML=Object.entries(p).filter(([k])=>k!=='trial'||!m.trialUsed)
-   .map(([k,v])=>`<div class="plan"><div><b>${v.name}</b><div class="mut">${v.price}$ · ${v.daily} إعلانات/يوم</div></div><button onclick="pay('${k}')">اشترك</button></div><hr style="border:0;border-top:1px solid var(--bd)">`).join('');return show('vPlans')}
+  if(!m.active){const p=await api('/api/plans');
+   $('ok').textContent='✅ تم تجهيز حسابك'+(BZ?' لنشاط «'+BZ+'»':'')+'. اختر خطتك وابدأ الإنتاج.';
+   $('plans').innerHTML=Object.entries(p).filter(([k])=>k!=='trial'||!m.trialUsed).map(([k,v])=>{
+    const d=(v.price/v.days).toFixed(2),sv=k==='yearly'?`<div class="sv">وفّر ${p.monthly.price*12-v.price}$ مقارنة بالشهري</div>`:'';
+    const bd=k==='trial'?'الأسهل للبدء':k==='monthly'?'⭐ الأكثر طلباً':'الأوفر';
+    return `<div class="pc${k==='monthly'?' best':''}"><span class="bd">${bd}</span><b>${v.name}</b><div class="pr">${v.price}$ <small>≈ ${d}$ باليوم</small></div>${sv}<div class="mut">${v.daily} فيديو + ${v.tools} نص يومياً</div><button onclick="pay('${k}')">${k==='trial'?'جرّب 3 أيام بـ3$':'اشترك الآن'}</button></div>`}).join('');
+   return show('vPlans')}
   const q=`الخطة: ${m.plan} · أدوات ${m.toolsUsed}/${m.toolLimit} · فيديو ${m.usedToday}/${m.dailyLimit} اليوم · ينتهي ${new Date(m.expires).toLocaleDateString('ar')}`;
   $('quota').textContent=q;$('quota2').textContent=q;
   const t=await api('/api/tools');D=t.dialects;
