@@ -13,6 +13,7 @@ h1{font-size:22px;margin:8px 0}h2{font-size:17px;margin:0 0 10px}input,select,te
 button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}button.alt{background:transparent;color:var(--tx);border:1px solid var(--bd)}
 .mut{color:var(--mut);font-size:14px}.plan{display:flex;justify-content:space-between;align-items:center;gap:10px}.plan button{width:auto;padding:9px 16px}
 #msg{color:#ff6b6b;min-height:20px}.hide{display:none}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:600;padding:14px 6px}pre{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.1);padding:12px;border-radius:10px}
+.q{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd)}.q input{width:auto;margin:4px 0 0}
 </style>
 </head>
 <body><main>
@@ -20,7 +21,16 @@ button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}b
 
 <section id="vHome" class="card hide"><h2>عندك كود اشتراك؟</h2>
 <input id="cd" placeholder="AD-XXXX-XXXX" autocapitalize="characters" dir="ltr"><button onclick="enter()">دخول</button></section>
+<section id="vQuiz" class="card hide"><p class="mut" id="qp"></p><h2 id="qq" style="font-size:20px;line-height:1.6"></h2>
+<button onclick="ans(1)">نعم</button><button class="alt" onclick="ans(0)">لا</button><button class="alt" onclick="show('vHome','vPlans','vCamp')">تخطّ إلى الخطط</button></section>
+<section id="vResult" class="card hide"><h2 id="rt"></h2><div id="rl"></div>
+<div class="card" style="margin:12px 0 0;border-color:var(--ac)"><b>🚀 عندنا الحل</b><p style="margin:6px 0 0">فريق تسويق وتمويل جاهز يشتغل على حملتك، مع 14 أداة ذكاء اصطناعي تكتب وتخطط وتحلل عنك. اشترك واطلب كود دخولك.</p></div></section>
 <section id="vPlans" class="card hide"><h2>اختر خطتك</h2><p class="mut">بدون حساب: ادفع، نأكّد الدفع، ويصلك كود دخول.</p><div id="plans"></div></section>
+<section id="vCamp" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2>💰 موّل حملتك الإعلانية على السوشال ميديا</h2><p class="mut">اترك بياناتك وبنتواصل معك لتمويل حملتك وتشغيلها.</p>
+<input id="c_name" placeholder="اسمك"><input id="c_contact" placeholder="واتساب أو تلغرام" dir="ltr">
+<select id="c_pf"><option>فيسبوك</option><option>إنستغرام</option><option>تيك توك</option><option>سناب شات</option><option>أخرى</option></select>
+<input id="c_bd" placeholder="ميزانية الحملة (مثلاً 200$)"><input id="c_goal" placeholder="هدفك (مبيعات، رسائل، متابعين...)">
+<button onclick="camp()">إرسال الطلب</button><p class="mut" id="cm"></p></section>
 <section id="vOrder" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2 id="ot"></h2>
 <input id="o_name" placeholder="اسمك"><input id="o_contact" placeholder="رقم واتساب أو معرّف تلغرام" dir="ltr">
 <input id="o_biz" placeholder="نوع نشاطك (اختياري)"><button onclick="order()">متابعة للدفع</button></section>
@@ -40,7 +50,7 @@ button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}b
 </main>
 <script>
 const $=id=>document.getElementById(id);let T='';try{T=localStorage.getItem('t')||''}catch(e){}
-const show=(...ids)=>['vHome','vPlans','vOrder','vPay','vWait','vTools','vRun','vStudio'].forEach(i=>$(i).classList.toggle('hide',!ids.includes(i)));
+const show=(...ids)=>['vHome','vQuiz','vResult','vPlans','vCamp','vOrder','vPay','vWait','vTools','vRun','vStudio'].forEach(i=>$(i).classList.toggle('hide',!ids.includes(i)));
 const err=m=>$('msg').textContent=m||'';
 async function api(p,o={}){const r=await fetch(p,{...o,headers:{'Content-Type':'application/json',Authorization:'Bearer '+T,...(o.headers||{})}});
  const d=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(d.error||'خطأ'),{code:d.code});return d}
@@ -54,18 +64,41 @@ async function init(){
  if(q){OID=q;return wait()}
  if(!T){const r=await api('/api/plans');PI=r;$('out').classList.add('hide');$('who').textContent='';
   $('plans').innerHTML=Object.entries(r.plans).map(([k,v])=>`<div class="plan"><div><b>${v.name}</b><div class="mut">${v.price}$ · ${v.daily} فيديو/يوم · ${v.tools} أداة/يوم</div></div><button onclick="pick('${k}')">اشترك</button></div><hr style="border:0;border-top:1px solid var(--bd)">`).join('');
-  return show('vHome','vPlans')}
+  startQuiz();return show('vHome','vQuiz')}
  try{const m=await api('/api/me');$('out').classList.remove('hide');$('who').textContent=m.name;
   if(!m.active){err('انتهى اشتراكك، اطلب كوداً جديداً');return logout()}
   const q2=`الخطة: ${m.plan} · أدوات ${m.toolsUsed}/${m.toolLimit} · فيديو ${m.usedToday}/${m.dailyLimit} اليوم · ينتهي ${new Date(m.expires).toLocaleDateString('ar')}`;
   $('quota').textContent=q2;$('quota2').textContent=q2;
   const t=await api('/api/tools');D=t.dialects;
   $('dl').innerHTML=D.map(x=>`<option>${x}</option>`).join('');
-  $('grid').innerHTML=`<button onclick="show('vStudio')">🎥<br>فيديو إعلاني</button>`+t.tools.map(x=>`<button onclick="openTool('${x.id}','${x.name}')">${x.icon}<br>${x.name}</button>`).join('');
+  $('grid').innerHTML=`<button onclick="show('vStudio')">🎥<br>فيديو إعلاني</button><button onclick="openAll()">⚡<br>كل الأدوات دفعة وحدة</button><button onclick="show('vCamp')">💰<br>موّل حملتك</button>`+t.tools.map(x=>`<button onclick="openTool('${x.id}','${x.name}')">${x.icon}<br>${x.name}</button>`).join('');
   show('vTools')
  }catch(e){logout()}}
+const Q13=[
+['هل سبق وموّلت إعلاناً ولم يأتك أي طلب؟','فريق التمويل عندنا يبني الحملة ويتابعها يومياً حتى تجيب نتيجة'],
+['هل سبق وصرفت ميزانية إعلانات وخسرتها؟','نبدأ بميزانية صغيرة للاختبار، ونكبّر الإعلان الرابح فقط'],
+['هل جرّبت التسويق من قبل وفشلت؟','خطة واضحة من فريق تسويق جاهز بدل التجربة العشوائية'],
+['هل ما عندك خبرة بالإعلانات الممولة؟','فريقنا صاحب الخبرة يشتغل عنك، وأنت ركّز على بيع منتجك'],
+['هل ما بتعرف مين الجمهور المناسب لمنتجك؟','أداة تحديد الجمهور بتعطيك 5 شرائح جاهزة مع رسالة لكل شريحة'],
+['هل صعب عليك كتابة إعلان يقنع الزبون؟','نصوص وعناوين إعلانية جاهزة بلهجتك للاختبار A/B'],
+['هل ما عندك وقت أو ميزانية لتصوير فيديو إعلاني؟','فيديو إعلاني 15 ثانية من صورة منتجك مع صوت'],
+['هل الزبون بيسأل عن السعر وبعدها بيختفي؟','ردود واتساب جاهزة للسعر والاعتراض وإغلاق الصفقة'],
+['هل منافسينك أقوى منك على السوشال ميديا؟','تحليل منافسين بيوضح ضعفهم وكيف تتميز عنهم'],
+['هل محتواك على السوشال غير منتظم؟','جدول محتوى كامل لـ 30 يوم'],
+['هل عروضك ما بتجذب الزبائن؟','7 أفكار عروض وحملات مع حساب الربحية'],
+['هل أثّرت تقييمات سلبية على سمعتك؟','ردود احترافية بتحوّل الغاضب لزبون راضي'],
+['هل بدك فريق واحد يتولى التسويق والتمويل كله عنك؟','هاد بالضبط اللي بنقدمه: فريق جاهز مع 14 أداة']];
+let QS=[],QI=0;
+function startQuiz(){QS=[];QI=0;showQ()}
+function showQ(){$('qp').textContent=`سؤال ${QI+1} من 13`;$('qq').textContent=Q13[QI][0]}
+function ans(y){if(y)QS.push(QI);if(++QI<13)showQ();else finishQuiz()}
+function finishQuiz(){$('rt').textContent=QS.length?`جاوبت بنعم على ${QS.length} من 13، وهاد حلها عنا:`:'عندنا الحل الجاهز لنجاح حملتك:';
+ $('rl').innerHTML=QS.map(i=>`<div class="q"><span>✅</span><div><b>${Q13[i][0]}</b><div class="mut">${Q13[i][1]}</div></div></div>`).join('');
+ show('vHome','vResult','vPlans','vCamp');scrollTo(0,0)}
+async function camp(){try{err();await api('/api/campaign',{method:'POST',body:JSON.stringify({name:$('c_name').value,contact:$('c_contact').value,platform:$('c_pf').value,budget:$('c_bd').value,goal:$('c_goal').value})});$('cm').textContent='✅ وصل طلبك، رح نتواصل معك قريباً.'}catch(e){err(e.message)}}
+function openAll(){TL='__all';$('tn').textContent='⚡ كل الأدوات دفعة وحدة';$('res').classList.add('hide');$('cp').classList.add('hide');err();show('vRun')}
 function pick(k){PL=k;$('ot').textContent=PI.plans[k].name+' — '+PI.plans[k].price+'$';show('vOrder')}
-async function order(){try{err();const d=await api('/api/order',{method:'POST',body:JSON.stringify({plan:PL,name:$('o_name').value,contact:$('o_contact').value,business:$('o_biz').value})});
+async function order(){try{err();const d=await api('/api/order',{method:'POST',body:JSON.stringify({plan:PL,name:$('o_name').value,contact:$('o_contact').value,business:$('o_biz').value,problems:QS})});
  OID=d.orderId;try{localStorage.setItem('o',OID)}catch(e){}
  $('pi').textContent=PI.payInfo||'سيتواصل معك فريقنا بتفاصيل الدفع.';$('pi').classList.toggle('hide',!!d.invoiceUrl&&!PI.payInfo);
  $('pl').classList.toggle('hide',!d.invoiceUrl);if(d.invoiceUrl)$('pl').href=d.invoiceUrl;show('vPay')}catch(e){err(e.message)}}
@@ -80,8 +113,8 @@ function wait(){show('vWait');try{localStorage.setItem('o',OID)}catch(e){}
 let D=[],TL='';
 function openTool(id,n){TL=id;$('tn').textContent=n;$('res').classList.add('hide');$('cp').classList.add('hide');err();show('vRun')}
 async function runTool(){try{err();$('rb').disabled=true;$('rb').textContent='جاري التوليد...';
- const d=await api('/api/tool/run',{method:'POST',body:JSON.stringify({tool:TL,brief:$('br').value,dialect:$('dl').value})});
- $('res').textContent=d.text;$('res').classList.remove('hide');$('cp').classList.remove('hide')}catch(e){err(e.message)}
+ const all=TL==='__all';const d=await api(all?'/api/tool/run-all':'/api/tool/run',{method:'POST',body:JSON.stringify({tool:TL,brief:$('br').value,dialect:$('dl').value})});
+ $('res').textContent=all?d.results.map(r=>`${r.icon} ${r.name}\n${r.text||'⚠️ '+r.error}`).join('\n\n━━━━━━━━\n\n'):d.text;$('res').classList.remove('hide');$('cp').classList.remove('hide')}catch(e){err(e.message)}
  $('rb').disabled=false;$('rb').textContent='توليد'}
 async function pay(plan){try{err();const d=await api('/api/checkout',{method:'POST',body:JSON.stringify({plan})});location.href=d.url}catch(e){err(e.message)}}
 const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});

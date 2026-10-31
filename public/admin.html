@@ -15,7 +15,7 @@ code{direction:ltr;display:inline-block;font-size:17px;font-weight:700}#e{color:
 <div class="row"><button class="a" onclick="ask()">تفعيل التنبيهات</button><span class="mut" id="pn"></span></div>
 <h2>طلبات تنتظر التأكيد</h2><div id="pd"></div>
 <h2>كود يدوي</h2><div class="c"><div class="row"><select id="mp"><option value="trial">تجربة</option><option value="monthly">شهري</option><option value="yearly">سنوي</option></select><input id="mn" placeholder="اسم الزبون"><input id="mc" placeholder="واتساب"><button onclick="mk()">إنشاء</button></div><div id="mr" class="mut"></div></div>
-<h2>كل الطلبات</h2><div id="ol"></div><h2>الأكواد</h2><div id="cl"></div></div></main>
+<h2>طلبات تمويل حملات</h2><div id="cmp"></div><h2>كل الطلبات</h2><div id="ol"></div><h2>الأكواد</h2><div id="cl"></div></div></main>
 <script>
 const $=i=>document.getElementById(i);let K='',seen=null;try{K=sessionStorage.getItem('k')||''}catch(e){}
 const P={trial:'تجربة',monthly:'شهري',yearly:'سنوي'},ST={new:'لم يدفع',paid:'دفع — بانتظارك',approved:'مؤكد',rejected:'مرفوض'};
@@ -28,7 +28,7 @@ function beep(){try{const a=new AudioContext(),o=a.createOscillator();o.connect(
 const wa=(c,t)=>'https://wa.me/'+String(c).replace(/\D/g,'')+'?text='+encodeURIComponent(t);
 function card(o){const pay=o.status==='paid';
  return `<div class="c ${pay?'new':''}"><b>${esc(o.name)}</b> · ${P[o.plan]} · ${o.price}$ <span class="mut">(${ST[o.status]})</span><div class="mut" dir="ltr" style="text-align:right">${esc(o.contact)}</div>
- ${o.business?`<div class="mut">${esc(o.business)}</div>`:''}${o.ref?`<div class="mut">مرجع: ${esc(o.ref)}</div>`:''}
+ ${o.business?`<div class="mut">${esc(o.business)}</div>`:''}${o.problems&&o.problems.length?`<div class="mut">أجاب نعم على ${o.problems.length} من 13 سؤال</div>`:''}${o.ref?`<div class="mut">مرجع: ${esc(o.ref)}</div>`:''}
  ${o.code?`<div><code>${esc(o.code)}</code> <a href="${wa(o.contact,'كود دخولك: '+o.code)}" target="_blank">إرسال واتساب</a></div>`:''}
  ${o.status==='paid'||o.status==='new'?`<div class="row"><button onclick="ap('${o.id}')">✅ تأكيد وإصدار كود</button><button class="r" onclick="rj('${o.id}')">رفض</button></div>`:''}</div>`}
 async function load(first){try{$('e').textContent='';const d=await api('/api/admin/orders');$('lg').classList.add('hide');$('ap').classList.remove('hide');note();
@@ -36,11 +36,13 @@ async function load(first){try{$('e').textContent='';const d=await api('/api/adm
  $('pd').innerHTML=paid.map(card).join('')||'<p class="mut">لا شيء حالياً</p>';
  $('ol').innerHTML=d.orders.filter(o=>o.status!=='paid').map(card).join('')||'<p class="mut">لا طلبات</p>';
  $('cl').innerHTML=d.codes.map(c=>`<div class="c"><code>${esc(c.code)}</code> <span class="mut">${esc(c.name)} · ${P[c.plan]} · ${c.revoked?'ملغى':c.active?'ينتهي '+new Date(c.expires).toLocaleDateString('ar'):'منتهي'}</span><div class="row"><button class="a" onclick="rv('${c.code}')">${c.revoked?'تفعيل':'إلغاء'}</button></div></div>`).join('');
- const ids=new Set(paid.map(o=>o.id));
- if(seen&&[...ids].some(i=>!seen.has(i))){beep();document.title='🔔 دفعة جديدة';if(Notification.permission==='granted')new Notification('دفعة جديدة تنتظر التأكيد')}
+ $('cmp').innerHTML=d.campaigns.map(c=>`<div class="c ${c.done?'':'new'}"><b>${esc(c.name)}</b> · ${esc(c.platform)} · ${esc(c.budget)}<div class="mut" dir="ltr" style="text-align:right">${esc(c.contact)}</div><div class="mut">${esc(c.goal)}</div><div class="row"><a href="${wa(c.contact,'أهلاً '+c.name+'، بخصوص طلب تمويل حملتك')}" target="_blank"><button>واتساب</button></a><button class="a" onclick="cd('${c.id}')">${c.done?'إعادة فتح':'تم'}</button></div></div>`).join('')||'<p class="mut">لا طلبات</p>';
+ const ids=new Set(paid.map(o=>o.id));d.campaigns.filter(c=>!c.done).forEach(c=>ids.add(c.id));
+ if(seen&&[...ids].some(i=>!seen.has(i))){beep();document.title='🔔 طلب جديد';if(Notification.permission==='granted')new Notification('طلب جديد بانتظارك')}
  seen=ids;if(!window.iv)window.iv=setInterval(load,8000)}catch(e){if(first)$('e').textContent=e.message}}
 async function ap(i){try{await api('/api/admin/orders/'+i+'/approve','POST');load()}catch(e){$('e').textContent=e.message}}
 async function rj(i){if(confirm('رفض الطلب؟')){await api('/api/admin/orders/'+i+'/reject','POST');load()}}
+async function cd(i){await api('/api/admin/campaigns/'+i+'/done','POST');load()}
 async function rv(c){await api('/api/admin/codes/'+c+'/revoke','POST');load()}
 async function mk(){try{const d=await api('/api/admin/codes','POST',{plan:$('mp').value,name:$('mn').value,contact:$('mc').value});$('mr').innerHTML='الكود: <code>'+esc(d.code)+'</code>';load()}catch(e){$('e').textContent=e.message}}
 if(K){$('k').value=K;load(true)}
