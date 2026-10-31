@@ -11,112 +11,20 @@
 main{max-width:560px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
 h1{font-size:22px;margin:8px 0}h2{font-size:17px;margin:0 0 10px}input,select,textarea,button{width:100%;font:inherit;padding:11px;margin:5px 0;border-radius:10px;border:1px solid var(--bd);background:transparent;color:var(--tx)}
 button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}button.alt{background:transparent;color:var(--tx);border:1px solid var(--bd)}
-.mut{color:var(--mut);font-size:14px}
-#msg{color:#ff6b6b;min-height:20px}.hide{display:none}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:600;padding:14px 6px}#ok,.okb{background:rgba(60,200,120,.15);border-radius:10px;padding:10px;margin-bottom:12px;font-size:14px}.ben{padding:0 18px;margin:8px 0 14px;line-height:1.9;font-size:15px}
-.pc{border:2px solid var(--bd);border-radius:14px;padding:14px;margin:10px 0;position:relative}.pc.best{border-color:var(--ac)}.bd{position:absolute;top:-11px;right:12px;background:var(--ac);color:#111;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px}
-.pr{font-size:26px;font-weight:800}.pr small{font-size:13px;font-weight:400;color:var(--mut)}.sv{color:#3cc878;font-size:13px}
-.bars{display:flex;gap:6px;margin-bottom:16px}.bars i{flex:1;height:5px;border-radius:5px;background:var(--bd)}.bars i.on{background:var(--ac)}
-.hero h2{font-size:22px;line-height:1.5}.ba{display:flex;gap:10px;margin:14px 0}.ba>div{flex:1;text-align:center;font-size:12px}.ba span{display:inline-block;padding:3px 10px;border-radius:20px;background:var(--bd);margin-bottom:6px}.ba .af span{background:var(--ac);color:#111;font-weight:700}
-.ph{height:170px;border-radius:14px;overflow:hidden;position:relative;background:linear-gradient(160deg,#4a4a2e,#1d1d14)}.af .ph{background:linear-gradient(160deg,#f1d9bd,#d9b48c)}.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.opt{display:block;text-align:right;background:transparent;color:var(--tx);border:2px solid var(--bd);font-weight:600;margin:8px 0;padding:14px}.opt:active{border-color:var(--ac)}
-.lnk{background:none;border:0;color:var(--mut);font-weight:400;text-decoration:underline}
-pre{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.1);padding:12px;border-radius:10px}
+.mut{color:var(--mut);font-size:14px}.plan{display:flex;justify-content:space-between;align-items:center;gap:10px}.plan button{width:auto;padding:9px 16px}
+#msg{color:#ff6b6b;min-height:20px}.hide{display:none}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:600;padding:14px 6px}pre{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.1);padding:12px;border-radius:10px}
 </style>
-<script>window.onerror=function(m){var e=document.getElementById('msg');if(e)e.textContent='خطأ: '+m};</script>
 </head>
 <body><main>
-<h1>🎬 AdStudio</h1><p class="mut" id="who"></p><div id="msg">جاري التحميل...</div>
+<h1>🎬 AdStudio</h1><p class="mut" id="who"></p><div id="msg"></div>
 
-<section id="vQuiz" class="card hide"><div class="bars" id="bars"></div><div id="qb"></div></section>
-
-<section id="vAuth" class="card hide"><h2>الدخول / إنشاء حساب</h2>
-<input id="em" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
-<input id="pw" type="password" placeholder="كلمة المرور (8 أحرف على الأقل)" autocomplete="current-password">
-<button onclick="auth('login')">دخول</button><button class="alt" onclick="auth('register')">حساب جديد</button></section>
-
-<section id="vSurvey" class="card hide"><h2>استبيان تفعيل الحساب</h2>
-<input id="s_business" placeholder="ما نوع نشاطك التجاري؟">
-<select id="s_platform"><option value="">أين تعلن؟</option><option>فيسبوك</option><option>إنستغرام</option><option>تيك توك</option><option>أخرى</option></select>
-<select id="s_budget"><option value="">ميزانية الإعلان الشهرية</option><option>أقل من 100$</option><option>100–500$</option><option>أكثر من 500$</option></select>
-<input id="s_goal" placeholder="هدفك الرئيسي (مبيعات، عملاء جدد...)">
-<button onclick="survey()">تفعيل الحساب</button></section>
-
-<section id="vPlans" class="card hide"><div id="ok"></div><h2>🚀 ابدأ الآن وانشر إعلانك اليوم</h2>
-<ul class="ben"><li>🎥 إعلان فيديو بصوت بشري خلال دقائق</li><li>✍️ 14 أداة نصوص بلهجتك: إعلانات، عناوين، سيناريوهات</li><li>📅 خطة محتوى وردود واتساب وتحليل منافسين</li><li>⚡ يتفعّل حسابك تلقائياً بعد تأكيد الدفع</li></ul>
-<div id="plans"></div><p class="mut">🔒 دفع آمن بالعملات الرقمية عبر NOWPayments · بدون تجديد تلقائي: تدفع مرة وتبدأ فوراً.</p></section>
-
-<section id="vTools" class="card hide"><h2>أدواتك</h2><p class="mut" id="quota"></p><div id="grid" class="grid"></div></section>
-<section id="vRun" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2 id="tn"></h2>
-<select id="dl"></select><textarea id="br" rows="5" placeholder="صف منتجك/نشاطك والجمهور والعرض بأي تفاصيل لديك"></textarea>
-<button id="rb" onclick="runTool()">توليد</button><pre id="res" class="hide"></pre><button class="alt hide" id="cp" onclick="navigator.clipboard.writeText($('res').textContent)">نسخ النتيجة</button></section>
-<section id="vStudio" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2>استوديو الإعلان (فيديو)</h2><p class="mut" id="quota2"></p>
-<input type="file" id="img" accept="image/*"><input id="pn" placeholder="اسم المنتج"><input id="of" placeholder="العرض">
-<textarea id="sc" rows="4" placeholder="نص الإعلان الصوتي"></textarea>
-<button id="go" onclick="produce()">إنتاج الإعلان</button><p class="mut" id="st"></p></section>
-<button class="alt hide" id="out" onclick="logout()">تسجيل الخروج</button>
-</main>
-<script>
-const $=id=>document.getElementById(id);let T='',BZ='',QI=0,QD=false,QA={};try{T=localStorage.getItem('t')||''}catch(e){}
-const show=(...ids)=>['vQuiz','vAuth','vSurvey','vPlans','vTools','vRun','vStudio'].forEach(i=>$(i).classList.toggle('hide',!ids.includes(i)));
-const err=m=>$('msg').textContent=m||'';
-async function api(p,o={}){const r=await fetch(p,{...o,headers:{'Content-Type':'application/json',Authorization:'Bearer '+T,...(o.headers||{})}});
- const d=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(d.error||'خطأ'),{code:d.code});return d}
-async function auth(k){try{err();const d=await api('/api/'+k,{method:'POST',body:JSON.stringify({email:$('em').value,password:$('pw').value})});
- T=d.token;try{localStorage.setItem('t',T)}catch(e){}init()}catch(e){err(e.message)}}
-function logout(){T='';try{localStorage.removeItem('t')}catch(e){}init()}
-async function survey(){try{err();const a={};['business','platform','budget','goal'].forEach(k=>a[k]=$('s_'+k).value);
- await api('/api/survey',{method:'POST',body:JSON.stringify({answers:a})});BZ=a.business;init()}catch(e){err(e.message)}}
-const QS=[{k:'business',q:'ما نوع نشاطك؟',o:['متجر ملابس','مطعم / كافيه','تجميل وعناية','متجر إلكتروني','خدمات','أخرى']},
-{k:'platform',q:'أين تريد أن تعلن؟',o:['فيسبوك','إنستغرام','تيك توك','كل المنصات']},
-{k:'goal',q:'ما أكبر مشكلة تواجهك في الإعلان؟',o:['إعلاناتي لا تجلب مبيعات','لا وقت عندي للتصميم','المصمم والمصوّر مكلفان','لا أعرف ماذا أكتب']},
-{k:'budget',q:'كم ميزانيتك الشهرية للإعلانات؟',o:['أقل من 100$','100–500$','أكثر من 500$']}];
-const REC={'إعلاناتي لا تجلب مبيعات':'نوصيك بأدوات: عناوين A/B، تحديد الجمهور، نص إعلان مبيعات.','لا وقت عندي للتصميم':'نوصيك بالفيديو الإعلاني من صورة المنتج + خطة محتوى 30 يوماً.','المصمم والمصوّر مكلفان':'صورة منتج من جوالك تكفي: نحوّلها إلى فيديو إعلاني بدون مصمم.','لا أعرف ماذا أكتب':'نوصيك بنصوص الإعلانات بلهجتك وردود الواتساب الجاهزة.'};
-function qGo(n){QI=n;qRender()}
-function qPick(i){const s=QS[QI-1];QA[s.k]=s.o[i];qGo(QI+1)}
-function qRender(){
- $('bars').innerHTML=[0,1,2,3,4,5].map(i=>`<i class="${i<=QI?'on':''}"></i>`).join('');
- let x='';
- if(QI===0)x=`<div class="hero"><h2>حوّل صورة منتجك إلى إعلان يبيع — في دقائق</h2><p class="mut">فيديو ونصوص وعناوين بلهجتك، من صورة واحدة من جوالك.</p>
-<div class="ba"><div><span>صورة بالهاتف</span><div class="ph"><img src="/before.jpg" onerror="this.remove()"></div></div><div class="af"><span>بعد AdStudio</span><div class="ph"><img src="/after.jpg" onerror="this.remove()"></div></div></div>
-<button onclick="qGo(1)">ابدأ ←</button><button class="lnk" onclick="QD=true;init()">لدي حساب؟ تسجيل الدخول</button></div>`;
- else if(QI<=4){const s=QS[QI-1];x=`<h2>${s.q}</h2>`+s.o.map((o,i)=>`<button class="opt" onclick="qPick(${i})">${o}</button>`).join('')+`<button class="lnk" onclick="qGo(${QI-1})">رجوع</button>`}
- else x=`<h2>🎯 خطتك جاهزة</h2><p>نشاطك: <b>${QA.business}</b> · المنصة: <b>${QA.platform}</b> · الميزانية: <b>${QA.budget}</b></p><div class="okb">${REC[QA.goal]||''}</div><p class="mut">أنشئ حسابك وجرّب 3 أيام بـ3$ فقط.</p><button onclick="QD=true;init()">أنشئ حسابي وابدأ</button><button class="lnk" onclick="qGo(1)">إعادة الإجابة</button>`;
- $('qb').innerHTML=x}
-async function init(){
- if(!T){if(!QD){show('vQuiz');qRender()}else show('vAuth');$('out').classList.add('hide');$('who').textContent='';return}
- try{const m=await api('/api/me');$('out').classList.remove('hide');$('who').textContent=m.email;
-  if(!m.surveyDone){if(QA.business&&QA.platform&&QA.budget&&QA.goal){const a={...QA};QA={};BZ=a.business;
-   await api('/api/survey',{method:'POST',body:JSON.stringify({answers:a})});return init()}return show('vSurvey')}
-  if(!m.active){const p=await api('/api/plans');
-   $('ok').textContent='✅ تم تجهيز حسابك'+(BZ?' لنشاط «'+BZ+'»':'')+'. اختر خطتك وابدأ الإنتاج.';
-   $('plans').innerHTML=Object.entries(p).filter(([k])=>k!=='trial'||!m.trialUsed).map(([k,v])=>{
-    const d=(v.price/v.days).toFixed(2),sv=k==='yearly'?`<div class="sv">وفّر ${p.monthly.price*12-v.price}$ مقارنة بالشهري</div>`:'';
-    const bd=k==='trial'?'الأسهل للبدء':k==='monthly'?'⭐ الأكثر طلباً':'الأوفر';
-    return `<div class="pc${k==='monthly'?' best':''}"><span class="bd">${bd}</span><b>${v.name}</b><div class="pr">${v.price}$ <small>≈ ${d}$ باليوم</small></div>${sv}<div class="mut">${v.daily} فيديو + ${v.tools} نص يومياً</div><button onclick="pay('${k}')">${k==='trial'?'جرّب 3 أيام بـ3$':'اشترك الآن'}</button></div>`}).join('');
-   return show('vPlans')}
-  const q=`الخطة: ${m.plan} · أدوات ${m.toolsUsed}/${m.toolLimit} · فيديو ${m.usedToday}/${m.dailyLimit} اليوم · ينتهي ${new Date(m.expires).toLocaleDateString('ar')}`;
-  $('quota').textContent=q;$('quota2').textContent=q;
-  const t=await api('/api/tools');D=t.dialects;
-  $('dl').innerHTML=D.map(x=>`<option>${x}</option>`).join('');
-  $('grid').innerHTML=`<button onclick="show('vStudio')">🎥<br>فيديو إعلاني</button>`+t.tools.map(x=>`<button onclick="openTool('${x.id}','${x.name}')">${x.icon}<br>${x.name}</button>`).join('');
-  show('vTools')
- }catch(e){logout()}}
-let D=[],TL='';
-function openTool(id,n){TL=id;$('tn').textContent=n;$('res').classList.add('hide');$('cp').classList.add('hide');err();show('vRun')}
-async function runTool(){try{err();$('rb').disabled=true;$('rb').textContent='جاري التوليد...';
- const d=await api('/api/tool/run',{method:'POST',body:JSON.stringify({tool:TL,brief:$('br').value,dialect:$('dl').value})});
- $('res').textContent=d.text;$('res').classList.remove('hide');$('cp').classList.remove('hide')}catch(e){err(e.message)}
- $('rb').disabled=false;$('rb').textContent='توليد'}
-async function pay(plan){try{err();const d=await api('/api/checkout',{method:'POST',body:JSON.stringify({plan})});location.href=d.url}catch(e){err(e.message)}}
-const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
-async function produce(){try{err();const f=$('img').files[0];if(!f)throw new Error('ارفع صورة المنتج');
- $('go').disabled=true;$('st').textContent='جاري البدء...';
- const d=await api('/api/start-production',{method:'POST',body:JSON.stringify({imageBase64:await b64(f),productName:$('pn').value,offer:$('of').value,script:$('sc').value})});
- const iv=setInterval(async()=>{try{const s=await api(`/api/check-task-status?taskId=${d.taskId}`);$('st').textContent=s.message||'';
-  if(s.status==='completed'){clearInterval(iv);$('go').disabled=false;const r=await fetch(s.videoUrl,{headers:{Authorization:'Bearer '+T}});
-   const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='ad.mp4';a.click();$('st').textContent='تم! تم تنزيل الفيديو.';init()}
-  if(s.status==='failed'){clearInterval(iv);$('go').disabled=false;err(s.error)}}catch(e){clearInterval(iv);$('go').disabled=false;err(e.message)}},5000)
- }catch(e){$('go').disabled=false;err(e.message)}}
-if(location.search.includes('paid=1'))setTimeout(()=>err(''),0);
-err('');init();
-</script></body></html>
+<section id="vHome" class="card hide"><h2>عندك كود اشتراك؟</h2>
+<input id="cd" placeholder="AD-XXXX-XXXX" autocapitalize="characters" dir="ltr"><button onclick="enter()">دخول</button></section>
+<section id="vPlans" class="card hide"><h2>اختر خطتك</h2><p class="mut">بدون حساب: ادفع، نأكّد الدفع، ويصلك كود دخول.</p><div id="plans"></div></section>
+<section id="vOrder" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2 id="ot"></h2>
+<input id="o_name" placeholder="اسمك"><input id="o_contact" placeholder="رقم واتساب أو معرّف تلغرام" dir="ltr">
+<input id="o_biz" placeholder="نوع نشاطك (اختياري)"><button onclick="order()">متابعة للدفع</button></section>
+<section id="vPay" class="card hide"><h2>الدفع</h2><pre id="pi"></pre><a id="pl" class="hide" href="#"><button>ادفع الآن (عملات رقمية)</button></a>
+<input id="ref" placeholder="رقم العملية / ملاحظة الدفع (اختياري)"><button onclick="claim()">✅ دفعت، أبلغ الإدارة</button></section>
+<section id="vWait" class="card hide"><h2 id="wt">بانتظار تأكيد الدفع…</h2><p class="mut" id="wm">يصلنا إشعار فوراً، وسيظهر كودك هنا بعد التأكيد. احتفظ بهذه الصفحة أو برابطها.</p>
+<pre id="wc" class="hide" dir="ltr" style="font-size:22px;text-align:center"></pre><button id="we" class="hide" onclick="enterWith($('wc').textContent)">ادخل الآن</button></section>
