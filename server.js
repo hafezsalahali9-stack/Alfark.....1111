@@ -1,4 +1,4 @@
-console.log('BOOT v3 - server.js loaded, node ' + process.version);
+console.log('BOOT v4 - server.js loaded, node ' + process.version);
 process.on('uncaughtException', (e) => { console.error('UNCAUGHT', e); });
 process.on('unhandledRejection', (e) => { console.error('UNHANDLED', e); });
 const express = require('express');
@@ -68,6 +68,11 @@ function adminAuth(req, res, next) {
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+// احتياط: إذا رُفع index.html / admin.html في المجلد الرئيسي بدل public
+const findPage = (names) => names.map((n) => path.join(__dirname, n)).find((f) => fs.existsSync(f));
+app.get('/', (req, res, next) => { const f = findPage(['public/index.html', 'index.html', 'index__1_.html']); f ? res.sendFile(f) : next(); });
+app.get('/admin.html', (req, res, next) => { const f = findPage(['public/admin.html', 'admin.html']); f ? res.sendFile(f) : next(); });
+console.log('pages:', ['public/index.html', 'index.html', 'index__1_.html', 'public/admin.html', 'admin.html'].map((n) => n + '=' + fs.existsSync(path.join(__dirname, n))).join(' '));
 const TEMP_DIR = path.join(__dirname, 'temp');
 fs.mkdirSync(TEMP_DIR, { recursive: true });
 const safeId = (s) => /^job_\d+$/.test(s || '');
@@ -369,5 +374,5 @@ setInterval(() => {
 
 app.get('/healthz', (req, res) => res.send('ok'));
 app.listen(PORT, '0.0.0.0', () => console.log('AdStudio online on port ' + PORT));
-// END OF FILE v3
+// END OF FILE v4
 
