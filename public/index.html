@@ -18,7 +18,7 @@ button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}b
 <body><main>
 <h1>🎬 AdStudio</h1><p class="mut" id="who"></p><div id="msg"></div>
 
-<section id="vAuth" class="card hide"><h2>الدخول / إنشاء حساب</h2>
+<section id="vAuth" class="card"><h2>الدخول / إنشاء حساب</h2>
 <input id="em" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
 <input id="pw" type="password" placeholder="كلمة المرور (8 أحرف على الأقل)" autocomplete="current-password">
 <button onclick="auth('login')">دخول</button><button class="alt" onclick="auth('register')">حساب جديد</button></section>
@@ -28,3 +28,61 @@ button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}b
 <select id="s_platform"><option value="">أين تعلن؟</option><option>فيسبوك</option><option>إنستغرام</option><option>تيك توك</option><option>أخرى</option></select>
 <select id="s_budget"><option value="">ميزانية الإعلان الشهرية</option><option>أقل من 100$</option><option>100–500$</option><option>أكثر من 500$</option></select>
 <input id="s_goal" placeholder="هدفك الرئيسي (مبيعات، عملاء جدد...)">
+<button onclick="survey()">تفعيل الحساب</button></section>
+
+<section id="vPlans" class="card hide"><h2>اختر خطتك</h2><div id="plans"></div><p class="mut">الدفع بالعملات الرقمية عبر NOWPayments.</p></section>
+
+<section id="vTools" class="card hide"><h2>أدواتك</h2><p class="mut" id="quota"></p><div id="grid" class="grid"></div></section>
+<section id="vRun" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2 id="tn"></h2>
+<select id="dl"></select><textarea id="br" rows="5" placeholder="صف منتجك/نشاطك والجمهور والعرض بأي تفاصيل لديك"></textarea>
+<button id="rb" onclick="runTool()">توليد</button><pre id="res" class="hide"></pre><button class="alt hide" id="cp" onclick="navigator.clipboard.writeText($('res').textContent)">نسخ النتيجة</button></section>
+<section id="vStudio" class="card hide"><button class="alt" onclick="init()">← رجوع</button><h2>استوديو الإعلان (فيديو)</h2><p class="mut" id="quota2"></p>
+<input type="file" id="img" accept="image/*"><input id="pn" placeholder="اسم المنتج"><input id="of" placeholder="العرض">
+<textarea id="sc" rows="4" placeholder="نص الإعلان الصوتي"></textarea>
+<button id="go" onclick="produce()">إنتاج الإعلان</button><p class="mut" id="st"></p></section>
+<button class="alt hide" id="out" onclick="logout()">تسجيل الخروج</button>
+</main>
+<script>
+window.onerror=function(m){var e=document.getElementById('msg');if(e)e.textContent='خطأ: '+m};
+const $=id=>document.getElementById(id);let T='';try{T=localStorage.getItem('t')||''}catch(e){}
+const show=(...ids)=>['vAuth','vSurvey','vPlans','vTools','vRun','vStudio'].forEach(i=>$(i).classList.toggle('hide',!ids.includes(i)));
+const err=m=>$('msg').textContent=m||'';
+async function api(p,o={}){const r=await fetch(p,{...o,headers:{'Content-Type':'application/json',Authorization:'Bearer '+T,...(o.headers||{})}});
+ const d=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(d.error||'خطأ'),{code:d.code});return d}
+async function auth(k){try{err();const d=await api('/api/'+k,{method:'POST',body:JSON.stringify({email:$('em').value,password:$('pw').value})});
+ T=d.token;try{localStorage.setItem('t',T)}catch(e){}init()}catch(e){err(e.message)}}
+function logout(){T='';try{localStorage.removeItem('t')}catch(e){}init()}
+async function survey(){try{err();const a={};['business','platform','budget','goal'].forEach(k=>a[k]=$('s_'+k).value);
+ await api('/api/survey',{method:'POST',body:JSON.stringify({answers:a})});init()}catch(e){err(e.message)}}
+async function init(){
+ if(!T){show('vAuth');$('out').classList.add('hide');$('who').textContent='';return}
+ try{const m=await api('/api/me');$('out').classList.remove('hide');$('who').textContent=m.email;
+  if(!m.surveyDone)return show('vSurvey');
+  if(!m.active){const p=await api('/api/plans');$('plans').innerHTML=Object.entries(p).filter(([k])=>k!=='trial'||!m.trialUsed)
+   .map(([k,v])=>`<div class="plan"><div><b>${v.name}</b><div class="mut">${v.price}$ · ${v.daily} إعلانات/يوم</div></div><button onclick="pay('${k}')">اشترك</button></div><hr style="border:0;border-top:1px solid var(--bd)">`).join('');return show('vPlans')}
+  const q=`الخطة: ${m.plan} · أدوات ${m.toolsUsed}/${m.toolLimit} · فيديو ${m.usedToday}/${m.dailyLimit} اليوم · ينتهي ${new Date(m.expires).toLocaleDateString('ar')}`;
+  $('quota').textContent=q;$('quota2').textContent=q;
+  const t=await api('/api/tools');D=t.dialects;
+  $('dl').innerHTML=D.map(x=>`<option>${x}</option>`).join('');
+  $('grid').innerHTML=`<button onclick="show('vStudio')">🎥<br>فيديو إعلاني</button>`+t.tools.map(x=>`<button onclick="openTool('${x.id}','${x.name}')">${x.icon}<br>${x.name}</button>`).join('');
+  show('vTools')
+ }catch(e){logout()}}
+let D=[],TL='';
+function openTool(id,n){TL=id;$('tn').textContent=n;$('res').classList.add('hide');$('cp').classList.add('hide');err();show('vRun')}
+async function runTool(){try{err();$('rb').disabled=true;$('rb').textContent='جاري التوليد...';
+ const d=await api('/api/tool/run',{method:'POST',body:JSON.stringify({tool:TL,brief:$('br').value,dialect:$('dl').value})});
+ $('res').textContent=d.text;$('res').classList.remove('hide');$('cp').classList.remove('hide')}catch(e){err(e.message)}
+ $('rb').disabled=false;$('rb').textContent='توليد'}
+async function pay(plan){try{err();const d=await api('/api/checkout',{method:'POST',body:JSON.stringify({plan})});location.href=d.url}catch(e){err(e.message)}}
+const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
+async function produce(){try{err();const f=$('img').files[0];if(!f)throw new Error('ارفع صورة المنتج');
+ $('go').disabled=true;$('st').textContent='جاري البدء...';
+ const d=await api('/api/start-production',{method:'POST',body:JSON.stringify({imageBase64:await b64(f),productName:$('pn').value,offer:$('of').value,script:$('sc').value})});
+ const iv=setInterval(async()=>{try{const s=await api(`/api/check-task-status?taskId=${d.taskId}`);$('st').textContent=s.message||'';
+  if(s.status==='completed'){clearInterval(iv);$('go').disabled=false;const r=await fetch(s.videoUrl,{headers:{Authorization:'Bearer '+T}});
+   const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='ad.mp4';a.click();$('st').textContent='تم! تم تنزيل الفيديو.';init()}
+  if(s.status==='failed'){clearInterval(iv);$('go').disabled=false;err(s.error)}}catch(e){clearInterval(iv);$('go').disabled=false;err(e.message)}},5000)
+ }catch(e){$('go').disabled=false;err(e.message)}}
+if(location.search.includes('paid=1'))setTimeout(()=>err(''),0);
+init();
+</script></body></html>
