@@ -1,1 +1,29 @@
-
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>لوحة الإدارة</title><meta name="robots" content="noindex">
+<style>:root{--bg:#0f1220;--card:#181c30;--tx:#f2f4ff;--mut:#9aa3c7;--ac:#ffb000;--bd:#2a3050}
+@media(prefers-color-scheme:light){:root{--bg:#f4f5fb;--card:#fff;--tx:#14172b;--mut:#5b6385;--bd:#dfe2f0}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Tahoma,sans-serif;background:var(--bg);color:var(--tx);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:640px;margin:auto;padding:16px}.c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+h1{font-size:20px}h2{font-size:16px;margin:16px 0 8px}input,select,button{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:transparent;color:var(--tx)}
+button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}button.r{background:transparent;color:#ff6b6b;border:1px solid #ff6b6b}button.a{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.mut{color:var(--mut);font-size:13px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.hide{display:none}.new{border-color:var(--ac);border-width:2px}
+code{direction:ltr;display:inline-block;font-size:17px;font-weight:700}#e{color:#ff6b6b}</style></head>
+<body><main><h1>🔔 لوحة الإدارة</h1><div id="e"></div>
+<div id="lg" class="c"><input id="k" type="password" placeholder="مفتاح الإدارة" dir="ltr" style="width:100%"><div class="row"><button onclick="go()">دخول</button></div></div>
+<div id="ap" class="hide">
+<div class="row"><button class="a" onclick="ask()">تفعيل التنبيهات</button><span class="mut" id="pn"></span></div>
+<h2>طلبات تنتظر التأكيد</h2><div id="pd"></div>
+<h2>كود يدوي</h2><div class="c"><div class="row"><select id="mp"><option value="trial">تجربة</option><option value="monthly">شهري</option><option value="yearly">سنوي</option></select><input id="mn" placeholder="اسم الزبون"><input id="mc" placeholder="واتساب"><button onclick="mk()">إنشاء</button></div><div id="mr" class="mut"></div></div>
+<h2>كل الطلبات</h2><div id="ol"></div><h2>الأكواد</h2><div id="cl"></div></div></main>
+<script>
+const $=i=>document.getElementById(i);let K='',seen=null;try{K=sessionStorage.getItem('k')||''}catch(e){}
+const P={trial:'تجربة',monthly:'شهري',yearly:'سنوي'},ST={new:'لم يدفع',paid:'دفع — بانتظارك',approved:'مؤكد',rejected:'مرفوض'};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(p,m='GET',b){const r=await fetch(p,{method:m,headers:{'x-admin-key':K,'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'خطأ');return d}
+function go(){K=$('k').value;try{sessionStorage.setItem('k',K)}catch(e){}load(true)}
+function ask(){if('Notification' in window)Notification.requestPermission().then(()=>note())}
+function note(){$('pn').textContent=('Notification' in window)?(Notification.permission==='granted'?'التنبيهات مفعّلة':''):''}
+function beep(){try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();o.stop(a.currentTime+.4)}catch(e){}}
+const wa=(c,t)=>'https://wa.me/'+String(c).replace(/\D/g,'')+'?text='+encodeURIComponent(t);
+function card(o){const pay=o.status==='paid';
