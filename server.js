@@ -1,3 +1,6 @@
+console.log('BOOT v3 - server.js loaded, node ' + process.version);
+process.on('uncaughtException', (e) => { console.error('UNCAUGHT', e); });
+process.on('unhandledRejection', (e) => { console.error('UNHANDLED', e); });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -364,4 +367,7 @@ setInterval(() => {
   }
 }, 36e5);
 
-app.listen(PORT, () => console.log('AdStudio online on port ' + PORT));
+app.get('/healthz', (req, res) => res.send('ok'));
+app.listen(PORT, '0.0.0.0', () => console.log('AdStudio online on port ' + PORT));
+// END OF FILE v3
+
