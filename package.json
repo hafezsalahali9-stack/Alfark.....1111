@@ -1,0 +1,14 @@
+{
+  "name": "adstudio-commercial-engine",
+  "version": "2.0.0",
+  "description": "AI ad studio with subscriptions and NOWPayments",
+  "main": "server.js",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "fluent-ffmpeg": "^2.1.3"
+  }
+}
