@@ -22,9 +22,10 @@ button{background:var(--ac);color:#111;font-weight:700;border:0;cursor:pointer}b
 .lnk{background:none;border:0;color:var(--mut);font-weight:400;text-decoration:underline}
 pre{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.1);padding:12px;border-radius:10px}
 </style>
+<script>window.onerror=function(m){var e=document.getElementById('msg');if(e)e.textContent='خطأ: '+m};</script>
 </head>
 <body><main>
-<h1>🎬 AdStudio</h1><p class="mut" id="who"></p><div id="msg"></div>
+<h1>🎬 AdStudio</h1><p class="mut" id="who"></p><div id="msg">جاري التحميل...</div>
 
 <section id="vQuiz" class="card hide"><div class="bars" id="bars"></div><div id="qb"></div></section>
 
@@ -55,7 +56,6 @@ pre{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.1);padding:12
 <button class="alt hide" id="out" onclick="logout()">تسجيل الخروج</button>
 </main>
 <script>
-window.onerror=function(m){var e=document.getElementById('msg');if(e)e.textContent='خطأ: '+m};
 const $=id=>document.getElementById(id);let T='',BZ='',QI=0,QD=false,QA={};try{T=localStorage.getItem('t')||''}catch(e){}
 const show=(...ids)=>['vQuiz','vAuth','vSurvey','vPlans','vTools','vRun','vStudio'].forEach(i=>$(i).classList.toggle('hide',!ids.includes(i)));
 const err=m=>$('msg').textContent=m||'';
@@ -78,4 +78,45 @@ function qRender(){
  let x='';
  if(QI===0)x=`<div class="hero"><h2>حوّل صورة منتجك إلى إعلان يبيع — في دقائق</h2><p class="mut">فيديو ونصوص وعناوين بلهجتك، من صورة واحدة من جوالك.</p>
 <div class="ba"><div><span>صورة بالهاتف</span><div class="ph"><img src="/before.jpg" onerror="this.remove()"></div></div><div class="af"><span>بعد AdStudio</span><div class="ph"><img src="/after.jpg" onerror="this.remove()"></div></div></div>
-<button o
+<button onclick="qGo(1)">ابدأ ←</button><button class="lnk" onclick="QD=true;init()">لدي حساب؟ تسجيل الدخول</button></div>`;
+ else if(QI<=4){const s=QS[QI-1];x=`<h2>${s.q}</h2>`+s.o.map((o,i)=>`<button class="opt" onclick="qPick(${i})">${o}</button>`).join('')+`<button class="lnk" onclick="qGo(${QI-1})">رجوع</button>`}
+ else x=`<h2>🎯 خطتك جاهزة</h2><p>نشاطك: <b>${QA.business}</b> · المنصة: <b>${QA.platform}</b> · الميزانية: <b>${QA.budget}</b></p><div class="okb">${REC[QA.goal]||''}</div><p class="mut">أنشئ حسابك وجرّب 3 أيام بـ3$ فقط.</p><button onclick="QD=true;init()">أنشئ حسابي وابدأ</button><button class="lnk" onclick="qGo(1)">إعادة الإجابة</button>`;
+ $('qb').innerHTML=x}
+async function init(){
+ if(!T){if(!QD){show('vQuiz');qRender()}else show('vAuth');$('out').classList.add('hide');$('who').textContent='';return}
+ try{const m=await api('/api/me');$('out').classList.remove('hide');$('who').textContent=m.email;
+  if(!m.surveyDone){if(QA.business&&QA.platform&&QA.budget&&QA.goal){const a={...QA};QA={};BZ=a.business;
+   await api('/api/survey',{method:'POST',body:JSON.stringify({answers:a})});return init()}return show('vSurvey')}
+  if(!m.active){const p=await api('/api/plans');
+   $('ok').textContent='✅ تم تجهيز حسابك'+(BZ?' لنشاط «'+BZ+'»':'')+'. اختر خطتك وابدأ الإنتاج.';
+   $('plans').innerHTML=Object.entries(p).filter(([k])=>k!=='trial'||!m.trialUsed).map(([k,v])=>{
+    const d=(v.price/v.days).toFixed(2),sv=k==='yearly'?`<div class="sv">وفّر ${p.monthly.price*12-v.price}$ مقارنة بالشهري</div>`:'';
+    const bd=k==='trial'?'الأسهل للبدء':k==='monthly'?'⭐ الأكثر طلباً':'الأوفر';
+    return `<div class="pc${k==='monthly'?' best':''}"><span class="bd">${bd}</span><b>${v.name}</b><div class="pr">${v.price}$ <small>≈ ${d}$ باليوم</small></div>${sv}<div class="mut">${v.daily} فيديو + ${v.tools} نص يومياً</div><button onclick="pay('${k}')">${k==='trial'?'جرّب 3 أيام بـ3$':'اشترك الآن'}</button></div>`}).join('');
+   return show('vPlans')}
+  const q=`الخطة: ${m.plan} · أدوات ${m.toolsUsed}/${m.toolLimit} · فيديو ${m.usedToday}/${m.dailyLimit} اليوم · ينتهي ${new Date(m.expires).toLocaleDateString('ar')}`;
+  $('quota').textContent=q;$('quota2').textContent=q;
+  const t=await api('/api/tools');D=t.dialects;
+  $('dl').innerHTML=D.map(x=>`<option>${x}</option>`).join('');
+  $('grid').innerHTML=`<button onclick="show('vStudio')">🎥<br>فيديو إعلاني</button>`+t.tools.map(x=>`<button onclick="openTool('${x.id}','${x.name}')">${x.icon}<br>${x.name}</button>`).join('');
+  show('vTools')
+ }catch(e){logout()}}
+let D=[],TL='';
+function openTool(id,n){TL=id;$('tn').textContent=n;$('res').classList.add('hide');$('cp').classList.add('hide');err();show('vRun')}
+async function runTool(){try{err();$('rb').disabled=true;$('rb').textContent='جاري التوليد...';
+ const d=await api('/api/tool/run',{method:'POST',body:JSON.stringify({tool:TL,brief:$('br').value,dialect:$('dl').value})});
+ $('res').textContent=d.text;$('res').classList.remove('hide');$('cp').classList.remove('hide')}catch(e){err(e.message)}
+ $('rb').disabled=false;$('rb').textContent='توليد'}
+async function pay(plan){try{err();const d=await api('/api/checkout',{method:'POST',body:JSON.stringify({plan})});location.href=d.url}catch(e){err(e.message)}}
+const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
+async function produce(){try{err();const f=$('img').files[0];if(!f)throw new Error('ارفع صورة المنتج');
+ $('go').disabled=true;$('st').textContent='جاري البدء...';
+ const d=await api('/api/start-production',{method:'POST',body:JSON.stringify({imageBase64:await b64(f),productName:$('pn').value,offer:$('of').value,script:$('sc').value})});
+ const iv=setInterval(async()=>{try{const s=await api(`/api/check-task-status?taskId=${d.taskId}`);$('st').textContent=s.message||'';
+  if(s.status==='completed'){clearInterval(iv);$('go').disabled=false;const r=await fetch(s.videoUrl,{headers:{Authorization:'Bearer '+T}});
+   const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='ad.mp4';a.click();$('st').textContent='تم! تم تنزيل الفيديو.';init()}
+  if(s.status==='failed'){clearInterval(iv);$('go').disabled=false;err(s.error)}}catch(e){clearInterval(iv);$('go').disabled=false;err(e.message)}},5000)
+ }catch(e){$('go').disabled=false;err(e.message)}}
+if(location.search.includes('paid=1'))setTimeout(()=>err(''),0);
+err('');init();
+</script></body></html>
