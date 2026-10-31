@@ -27,3 +27,21 @@ function note(){$('pn').textContent=('Notification' in window)?(Notification.per
 function beep(){try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();o.stop(a.currentTime+.4)}catch(e){}}
 const wa=(c,t)=>'https://wa.me/'+String(c).replace(/\D/g,'')+'?text='+encodeURIComponent(t);
 function card(o){const pay=o.status==='paid';
+ return `<div class="c ${pay?'new':''}"><b>${esc(o.name)}</b> · ${P[o.plan]} · ${o.price}$ <span class="mut">(${ST[o.status]})</span><div class="mut" dir="ltr" style="text-align:right">${esc(o.contact)}</div>
+ ${o.business?`<div class="mut">${esc(o.business)}</div>`:''}${o.ref?`<div class="mut">مرجع: ${esc(o.ref)}</div>`:''}
+ ${o.code?`<div><code>${esc(o.code)}</code> <a href="${wa(o.contact,'كود دخولك: '+o.code)}" target="_blank">إرسال واتساب</a></div>`:''}
+ ${o.status==='paid'||o.status==='new'?`<div class="row"><button onclick="ap('${o.id}')">✅ تأكيد وإصدار كود</button><button class="r" onclick="rj('${o.id}')">رفض</button></div>`:''}</div>`}
+async function load(first){try{$('e').textContent='';const d=await api('/api/admin/orders');$('lg').classList.add('hide');$('ap').classList.remove('hide');note();
+ const paid=d.orders.filter(o=>o.status==='paid');
+ $('pd').innerHTML=paid.map(card).join('')||'<p class="mut">لا شيء حالياً</p>';
+ $('ol').innerHTML=d.orders.filter(o=>o.status!=='paid').map(card).join('')||'<p class="mut">لا طلبات</p>';
+ $('cl').innerHTML=d.codes.map(c=>`<div class="c"><code>${esc(c.code)}</code> <span class="mut">${esc(c.name)} · ${P[c.plan]} · ${c.revoked?'ملغى':c.active?'ينتهي '+new Date(c.expires).toLocaleDateString('ar'):'منتهي'}</span><div class="row"><button class="a" onclick="rv('${c.code}')">${c.revoked?'تفعيل':'إلغاء'}</button></div></div>`).join('');
+ const ids=new Set(paid.map(o=>o.id));
+ if(seen&&[...ids].some(i=>!seen.has(i))){beep();document.title='🔔 دفعة جديدة';if(Notification.permission==='granted')new Notification('دفعة جديدة تنتظر التأكيد')}
+ seen=ids;if(!window.iv)window.iv=setInterval(load,8000)}catch(e){if(first)$('e').textContent=e.message}}
+async function ap(i){try{await api('/api/admin/orders/'+i+'/approve','POST');load()}catch(e){$('e').textContent=e.message}}
+async function rj(i){if(confirm('رفض الطلب؟')){await api('/api/admin/orders/'+i+'/reject','POST');load()}}
+async function rv(c){await api('/api/admin/codes/'+c+'/revoke','POST');load()}
+async function mk(){try{const d=await api('/api/admin/codes','POST',{plan:$('mp').value,name:$('mn').value,contact:$('mc').value});$('mr').innerHTML='الكود: <code>'+esc(d.code)+'</code>';load()}catch(e){$('e').textContent=e.message}}
+if(K){$('k').value=K;load(true)}
+</script></body></html>
